@@ -1,3 +1,4 @@
+import json
 from tkinter import *
 from tkinter import messagebox
 from generator import generate
@@ -6,6 +7,13 @@ import pyperclip
 # import pandas
 
 BG_COLOR = "#dddddd"
+
+
+# ---------------------------- SEARCH BUTTON ------------------------------- #
+
+def search_website():
+    pass
+
 
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
@@ -18,14 +26,15 @@ def generate_strong_password():
     window.after(1000, lambda: copy_to_clipboard())
     password_entry.insert(0, strong_password)
 
-
 # ---------------------------- SAVE PASSWORD ------------------------------- #
+
 
 def save_data():
     data_entry = {
-        "Website": f"{website_entry.get()}",
-        "User": f"{user_entry.get()}",
-        "Password": f"{password_entry.get()}"
+        str(website_entry.get()): {
+            "user": str(user_entry.get()),
+            "password": str(password_entry.get()),
+        }
     }
 
     if len(website_entry.get()) == 0 or len(user_entry.get()) == 0 or len(password_entry.get()) == 0:
@@ -38,22 +47,36 @@ def save_data():
                                                f"Password: {password_entry.get()}\n\n"
                                                f"Is it OK to save?")
 
-        if not is_ok:
-            return
+        if not is_ok: return
         elif is_ok:
-            with open("data.txt", "a") as f:
-                f.write(f"{str(data_entry)}\n")
+            try:
+                with open("data.json", "r") as data_file:
+                    data = json.load(data_file)  # Reading old data
+
+            except FileNotFoundError as f_error:
+                json_dump(data_entry)
+
+            except json.decoder.JSONDecodeError as json_DErr:
+                json_dump(data_entry)
+
+            else:
+                data.update(data_entry)
+                json_dump(data)
 
     website_entry.delete(0, END)
-    # user_entry.delete(0, END)
     password_entry.delete(0, END)
     save_button.config(text="Password Stored ✓", fg="green")
 
     window.after(1000, lambda: save_button_behaviour())
 
 
+def json_dump(d):
+    with open("data.json", "w") as data_file:
+        json.dump(d, data_file, indent=4)
+
+
 def save_button_behaviour():
-    save_button.config(text="SAVE TO FILE ", fg="black")
+    save_button.config(text="SAVE TO FILE  ", fg="black")
 
 
 def copy_to_clipboard():
@@ -72,9 +95,9 @@ canvas.grid(column=2, row=1)
 
 website_label = Label(text="Website: ", bg=BG_COLOR)
 website_label.grid(column=1, row=2, sticky="e", pady=3)
-website_entry = Entry(font=("Arial", 10, "normal"), width=40, highlightthickness=0)
+website_entry = Entry(font=("Arial", 10, "normal"), width=30, highlightthickness=0)
 website_entry.focus()
-website_entry.grid(column=2, row=2, columnspan=2, sticky="w", pady=3)
+website_entry.grid(column=2, row=2, sticky="w", pady=3)
 
 extra_col = Label(text=" ", bg=BG_COLOR)
 extra_col.grid(column=4, row=1, sticky="e", padx=15)
@@ -89,6 +112,9 @@ password_label = Label(text="Password: ", bg=BG_COLOR)
 password_label.grid(column=1, row=4, sticky="e", pady=3)
 password_entry = Entry(font=("Arial", 10, "normal"), width=30, highlightthickness=0)
 password_entry.grid(column=2, row=4, sticky="w", pady=3)
+
+search_button = Button(text=" Search", highlightthickness=0, width=8, command=lambda: search_website())
+search_button.grid(column=3, row=2, sticky="w", pady=3)
 
 generate_button = Button(text=" Generate", highlightthickness=0, width=8, command=lambda: generate_strong_password())
 generate_button.grid(column=3, row=4, sticky="w", pady=3)
