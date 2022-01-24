@@ -9,11 +9,26 @@ import pyperclip
 BG_COLOR = "#dddddd"
 
 
-# ---------------------------- SEARCH BUTTON ------------------------------- #
+# ---------------------------- FIND PASSWORD------------------------------- #
 
-def search_website():
-    pass
+def find_password():
+    try:
+        with open("data.json", "r") as data_file:
+            data = json.load(data_file)
 
+    except FileNotFoundError:
+        messagebox.showwarning(title="Warning", message="No Data File Found.")
+
+    else:
+        if str(website_entry.get()) in data:
+            found_website = data[str(website_entry.get())]
+            pyperclip.copy(found_website['password'])
+            messagebox.showinfo(title=website_entry.get().upper(),
+                                message=f"EMAIL: {found_website['user']} \n\n"
+                                        f"PASSWORD: {found_website['password']}\n\n"
+                                        f"(Password was copied to clipboard)")
+        else:
+            messagebox.showwarning(title="WError", message="No details for the website exist.")
 
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
@@ -53,10 +68,10 @@ def save_data():
                 with open("data.json", "r") as data_file:
                     data = json.load(data_file)  # Reading old data
 
-            except FileNotFoundError as f_error:
+            except FileNotFoundError:
                 json_dump(data_entry)
 
-            except json.decoder.JSONDecodeError as json_DErr:
+            except json.decoder.JSONDecodeError:
                 json_dump(data_entry)
 
             else:
@@ -113,7 +128,7 @@ password_label.grid(column=1, row=4, sticky="e", pady=3)
 password_entry = Entry(font=("Arial", 10, "normal"), width=30, highlightthickness=0)
 password_entry.grid(column=2, row=4, sticky="w", pady=3)
 
-search_button = Button(text=" Search", highlightthickness=0, width=8, command=lambda: search_website())
+search_button = Button(text=" Search", highlightthickness=0, width=8, command=lambda: find_password())
 search_button.grid(column=3, row=2, sticky="w", pady=3)
 
 generate_button = Button(text=" Generate", highlightthickness=0, width=8, command=lambda: generate_strong_password())
